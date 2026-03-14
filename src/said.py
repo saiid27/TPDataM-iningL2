@@ -4,11 +4,9 @@ from sqlalchemy import create_engine, text
 # lire le fichier CSV
 df = pd.read_csv("data/said.csv", sep=";")
 
-# connexion à MySQL (serveur local)
-# عدّل اسم قاعدة البيانات وبيانات الدخول إذا لزم
 engine = create_engine("mysql+pymysql://root:@localhost/student_performance")
 
-# تجهيز الجدول إن لم يكن موجودًا، وإضافة الأعمدة الناقصة بدون حذف البيانات
+
 with engine.begin() as conn:
     conn.execute(
         text(
@@ -30,7 +28,6 @@ with engine.begin() as conn:
     if pk_exists == 0:
         conn.execute(text("ALTER TABLE etudiants ADD PRIMARY KEY (ID)"))
 
-# إرسال البيانات إلى MySQL دون حذف ما سبق مع التحديث عند التكرار
 upsert_sql = text(
     "INSERT INTO etudiants (ID, NAME, NOTE) "
     "VALUES (:ID, :NAME, :NOTE) "
@@ -42,7 +39,6 @@ with engine.begin() as conn:
     if rows:
         conn.execute(upsert_sql, rows)
 
-# استخراج الطلاب الذين لديهم G3 > 15 في DataFrame
 query = text("SELECT * FROM etudiants WHERE G3 > 15")
 df_g3 = pd.read_sql_query(query, con=engine)
 
